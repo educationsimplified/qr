@@ -5,54 +5,62 @@ const downloadBtn = document.getElementById("download");
 const sizeOptions = document.querySelector(".sizeOptions");
 const BGColor = document.getElementById("BGColor");
 const FGColor = document.getElementById("FGColor");
-let QR_Code;
-let sizeChoice, BGColorChoice, FGColorChoice;
 
-//Set size
+let sizeChoice = 100;
+let BGColorChoice = "#ffffff";
+let FGColorChoice = "#377dff";
+
+// Set size
 sizeOptions.addEventListener("change", () => {
   sizeChoice = sizeOptions.value;
 });
 
-//Set background color
+// Set background color
 BGColor.addEventListener("input", () => {
   BGColorChoice = BGColor.value;
 });
 
-//Set foreground color
+// Set foreground color
 FGColor.addEventListener("input", () => {
   FGColorChoice = FGColor.value;
 });
 
-//Format input
+// Format input
 const inputFormatter = (value) => {
-  value = value.replace(/[^a-z0-9A-Z]+/g, "");
-  return value;
+  return value.replace(/[^a-z0-9A-Z]+/g, "");
 };
 
-submitBtn.addEventListener("click", async () => {
+// Generate QR Code and enable download
+submitBtn.addEventListener("click", () => {
   container.innerHTML = "";
-  //QR code genertion
-  QR_Code = await new QRCode(container, {
+  // QR code generation
+  new QRCode(container, {
     text: userInput.value,
-    width: sizeChoice,
-    height: sizeChoice,
+    width: parseInt(sizeChoice),
+    height: parseInt(sizeChoice),
     colorDark: FGColorChoice,
     colorLight: BGColorChoice,
   });
 
-  //Set url for download
-  const src = container.firstChild.toDataURL("image/pmg");
-  downloadBtn.href = src;
-  let userValue = userInput.value;
-  try {
-    userValue = new URL(userValue).hostname;
-  } catch (_) {
-    userValue = inputFormatter(userValue);
-    downloadBtn.download = `${userValue}QR`;
+  // Set URL for download
+  setTimeout(() => {
+    const qrImage = container.querySelector("canvas").toDataURL("image/png");
+    downloadBtn.href = qrImage;
+
+    // Format the download filename
+    let userValue = userInput.value;
+    try {
+      userValue = new URL(userValue).hostname;
+    } catch (_) {
+      userValue = inputFormatter(userValue);
+    }
+
+    downloadBtn.download = `${userValue}_QR.png`;
     downloadBtn.classList.remove("hide");
-  }
+  }, 300);
 });
 
+// Enable/disable the Generate button based on input
 userInput.addEventListener("input", () => {
   if (userInput.value.trim().length < 1) {
     submitBtn.disabled = true;
@@ -63,12 +71,13 @@ userInput.addEventListener("input", () => {
   }
 });
 
+// Reset settings on page load
 window.onload = () => {
   container.innerHTML = "";
   sizeChoice = 100;
   sizeOptions.value = 100;
   userInput.value = "";
-  BGColor.vavlue = BGColorChoice = "#ffffff";
+  BGColor.value = BGColorChoice = "#ffffff";
   FGColor.value = FGColorChoice = "#377dff";
   downloadBtn.classList.add("hide");
   submitBtn.disabled = true;
